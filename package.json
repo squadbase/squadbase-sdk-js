@@ -1,0 +1,43 @@
+{
+  "name": "squadbase-sdk-js",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Javascript SDK for Squadbase",
+  "scripts": {
+    "dev": "concurrently pnpm:dev:*",
+    "dev:playground:nextjs": "pnpm --filter @repo/nextjs dev",
+    "dev:playground:react": "pnpm --filter @repo/react dev",
+    "dev:package:server": "pnpm --filter @squadbase/server dev",
+    "dev:package:browser": "pnpm --filter @squadbase/browser dev",
+    "dev:package:nextjs": "pnpm --filter @squadbase/nextjs dev",
+    "dev:package:react": "pnpm --filter @squadbase/react dev",
+    "build": "pnpm build:package:server && pnpm build:package:browser && pnpm build:package:nextjs && pnpm build:package:react",
+    "build:package:server": "pnpm --filter @squadbase/server run build",
+    "build:package:browser": "pnpm --filter @squadbase/browser run build",
+    "build:package:nextjs": "pnpm --filter @squadbase/nextjs run build",
+    "build:package:react": "pnpm --filter @squadbase/react run build",
+    "release:server:patch-beta": "tsx scripts/release.ts patch @squadbase/server --beta",
+    "release:browser:patch-beta": "tsx scripts/release.ts patch @squadbase/browser --beta",
+    "release:nextjs:patch-beta": "tsx scripts/release.ts patch @squadbase/nextjs --beta",
+    "release:react:patch-beta": "tsx scripts/release.ts patch @squadbase/react --beta",
+    "release:server:patch-latest": "tsx scripts/release.ts patch @squadbase/server --latest",
+    "release:browser:patch-latest": "tsx scripts/release.ts patch @squadbase/browser --latest",
+    "release:nextjs:patch-latest": "tsx scripts/release.ts patch @squadbase/nextjs --latest",
+    "release:react:patch-latest": "tsx scripts/release.ts patch @squadbase/react --latest"
+  },
+  "keywords": [],
+  "author": "Squadbase",
+  "license": "MIT",
+  "packageManager": "pnpm@10.6.3",
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "concurrently": "^9.1.2",
+    "tsx": "^4.7.1",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "ts-pattern": "^5.7.0",
+    "zod": "^3.24.2"
+  }
+}
