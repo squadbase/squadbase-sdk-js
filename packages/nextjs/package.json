@@ -30,7 +30,7 @@
   "license": "MIT",
   "packageManager": "pnpm@10.6.3",
   "dependencies": {
-    "@squadbase/server": "workspace:^"
+    "@squadbase/server": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",

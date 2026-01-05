@@ -1,7 +1,7 @@
 {
   "name": "squadbase-sdk-js",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Javascript SDK for Squadbase",
   "scripts": {
     "dev": "concurrently pnpm:dev:*",
@@ -16,14 +16,12 @@
     "build:package:browser": "pnpm --filter @squadbase/browser run build",
     "build:package:nextjs": "pnpm --filter @squadbase/nextjs run build",
     "build:package:react": "pnpm --filter @squadbase/react run build",
-    "release:server:patch-beta": "tsx scripts/release.ts patch @squadbase/server --beta",
-    "release:browser:patch-beta": "tsx scripts/release.ts patch @squadbase/browser --beta",
-    "release:nextjs:patch-beta": "tsx scripts/release.ts patch @squadbase/nextjs --beta",
-    "release:react:patch-beta": "tsx scripts/release.ts patch @squadbase/react --beta",
-    "release:server:patch-latest": "tsx scripts/release.ts patch @squadbase/server --latest",
-    "release:browser:patch-latest": "tsx scripts/release.ts patch @squadbase/browser --latest",
-    "release:nextjs:patch-latest": "tsx scripts/release.ts patch @squadbase/nextjs --latest",
-    "release:react:patch-latest": "tsx scripts/release.ts patch @squadbase/react --latest"
+    "release:patch": "tsx scripts/release.ts patch",
+    "release:minor": "tsx scripts/release.ts minor",
+    "release:major": "tsx scripts/release.ts major",
+    "release:patch:beta": "tsx scripts/release.ts patch --beta",
+    "release:minor:beta": "tsx scripts/release.ts minor --beta",
+    "release:major:beta": "tsx scripts/release.ts major --beta"
   },
   "keywords": [],
   "author": "Squadbase",
