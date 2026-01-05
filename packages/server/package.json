@@ -1,6 +1,6 @@
 {
   "name": "@squadbase/server",
-  "version": "0.0.2",
+  "version": "0.0.3-beta.0",
   "description": "Server-side SDK for Squadbase",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
