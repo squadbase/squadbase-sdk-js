@@ -1,5 +1,5 @@
 import { parse as parseCookie } from "cookie";
-import { APP_BASE_DOMAIN, SESSION_COOKIE_NAME } from "./constants";
+import { APP_BASE_DOMAIN, APP_SESSION_COOKIE_NAME, EDITOR_SESSION_COOKIE_NAME } from "./constants";
 import { User, zUser } from "./types";
 
 export type GetCookie = () => Promise<string | undefined> | string | undefined;
@@ -25,9 +25,10 @@ export class ServerClient {
       (await this.options.cookieOptions.getCookie()) ?? ""
     );
 
-    const sessionToken = cookie[SESSION_COOKIE_NAME];
+    const sessionToken = cookie[APP_SESSION_COOKIE_NAME] ?? cookie[EDITOR_SESSION_COOKIE_NAME]
 
     // ホスティング環境では認証がプロキシで通った場合にのみアプリケーションに到達するためsessionTokenが必ず存在する
+    // Editor環境ではAPP_SESSION_COOKIE_NAMEではなくEDITOR_SESSION_COOKIE_NAMEが使われる
     // ローカル環境の場合はmockUserを返す
     if (!sessionToken) {
       if (!this.options.mockUser) {
