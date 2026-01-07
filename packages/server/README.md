@@ -16,11 +16,12 @@ pnpm add @squadbase/server
 
 ### User Session
 
+User info is automatically available in apps deployed to Squadbase or running in Squadbase Editor.
+
 ```typescript
 import { createServerClient } from "@squadbase/server";
 
 const client = createServerClient({
-  projectId: "your-project-id",
   cookieOptions: {
     getCookie: () => {
       // Implement your cookie retrieval logic here
@@ -31,7 +32,6 @@ const client = createServerClient({
 
 // Get the current authenticated user
 const user = await client.getUser();
-console.log(user);
 // {
 //   username: string,
 //   email: string,
@@ -42,9 +42,9 @@ console.log(user);
 // }
 ```
 
-### Local Development
+### Outside Squadbase Environments
 
-For local development, you can provide a mock user:
+For use outside Squadbase environments (e.g., local development), you must set the `projectId` and `mockUser` options. These settings are not needed in Squadbase Editor or deployed environments.
 
 ```typescript
 const client = createServerClient({
@@ -71,10 +71,10 @@ Creates a new server client instance.
 
 #### Options
 
-- `projectId` (string): Your Squadbase project ID
+- `projectId` (optional): Your Squadbase project ID. Required outside Squadbase environments.
 - `cookieOptions` (object):
   - `getCookie`: Function that returns the session cookie string
-- `mockUser` (optional): Mock user object for local development
+- `mockUser` (optional): Mock user object for use outside Squadbase environments
 
 ### `ServerClient`
 

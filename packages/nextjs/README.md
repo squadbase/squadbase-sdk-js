@@ -16,30 +16,30 @@ pnpm add @squadbase/nextjs
 
 ### User Session
 
+User info is automatically available in apps deployed to Squadbase or running in Squadbase Editor.
+
 ```typescript
+// app/api/user/route.ts
 import { createNextjsServerClient } from "@squadbase/nextjs";
 
-// In your Next.js server component or API route
-const client = createNextjsServerClient({
-  projectId: "your-project-id",
-});
-
-// Get the current authenticated user
-const user = await client.getUser();
-console.log(user);
-// {
-//   username: string,
-//   email: string,
-//   firstName: string,
-//   lastName: string,
-//   iconUrl: string | null,
-//   roles: string[]
-// }
+export async function GET() {
+  const client = createNextjsServerClient();
+  const user = await client.getUser();
+  // {
+  //   username: string,
+  //   email: string,
+  //   firstName: string,
+  //   lastName: string,
+  //   iconUrl: string | null,
+  //   roles: string[]
+  // }
+  return Response.json(user);
+}
 ```
 
-### Local Development
+### Outside Squadbase Environments
 
-For local development, you can provide a mock user:
+For use outside Squadbase environments (e.g., local development), you must set the `projectId` and `mockUser` options. These settings are not needed in Squadbase Editor or deployed environments.
 
 ```typescript
 const client = createNextjsServerClient({
@@ -57,14 +57,14 @@ const client = createNextjsServerClient({
 
 ## API Reference
 
-### `createNextjsServerClient(options: NextjsServerClientOptions)`
+### `createNextjsServerClient(options?: NextjsServerClientOptions)`
 
 Creates a new Next.js server client instance. This is a wrapper around `createServerClient` that automatically handles cookie management using Next.js's `cookies()` API.
 
 #### Options
 
-- `projectId` (string): Your Squadbase project ID
-- `mockUser` (optional): Mock user object for local development
+- `projectId` (optional): Your Squadbase project ID. Required outside Squadbase environments.
+- `mockUser` (optional): Mock user object for use outside Squadbase environments
 
 ### `ServerClient`
 
