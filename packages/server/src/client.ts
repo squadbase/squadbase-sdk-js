@@ -4,7 +4,6 @@ import {
   APP_SESSION_COOKIE_NAME,
   PREVIEW_BASE_DOMAIN,
   PREVIEW_SESSION_COOKIE_NAME,
-  PROJECT_ID_ENV_NAME,
   SANDBOX_ID_ENV_NAME,
 } from "./constants";
 import { User, zUser } from "./types";
@@ -12,7 +11,7 @@ import { User, zUser } from "./types";
 export type GetCookie = () => Promise<string | undefined> | string | undefined;
 
 export type ServerClientOptions = {
-  projectId?: string; // legacy compatibility only
+  projectId: string;
   cookieOptions: {
     getCookie: GetCookie;
   };
@@ -66,19 +65,6 @@ export class ServerClient {
     return user;
   }
 
-  private get projectIdOrThrow() {
-    const projectId =
-      this.options.projectId ?? process.env[PROJECT_ID_ENV_NAME];
-
-    if (!projectId) {
-      throw new Error(
-        `Project ID is required. Please provide projectId in ServerClient options if you are running in local development environment.`
-      );
-    }
-
-    return projectId;
-  }
-
   private get sandboxIdOrThrow() {
     const sandboxId = process.env[SANDBOX_ID_ENV_NAME];
 
@@ -93,7 +79,7 @@ export class ServerClient {
 
   private getUserWithAppSessionRequest(appSessionToken: string) {
     return new Request(
-      `https://${this.projectIdOrThrow}.${
+      `https://${this.options.projectId}.${
         this.options._internal?.app_base_domain ?? APP_BASE_DOMAIN
       }/_sqcore/auth`,
       {
