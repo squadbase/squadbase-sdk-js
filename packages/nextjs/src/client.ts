@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 
 type NextjsServerClientOptions = Omit<ServerClientOptions, "cookieOptions">;
 
-export function createNextjsServerClient(options: NextjsServerClientOptions) {
+export function createNextjsServerClient(options?: NextjsServerClientOptions) {
   return createServerClient({
     ...options,
     cookieOptions: { getCookie: async () => (await cookies()).toString() },

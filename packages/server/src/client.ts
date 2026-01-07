@@ -11,7 +11,7 @@ import { User, zUser } from "./types";
 export type GetCookie = () => Promise<string | undefined> | string | undefined;
 
 export type ServerClientOptions = {
-  projectId: string;
+  projectId?: string;
   cookieOptions: {
     getCookie: GetCookie;
   };
@@ -40,7 +40,7 @@ export class ServerClient {
     if (!appSessionToken && !previewSessionToken) {
       if (!this.options.mockUser) {
         throw new Error(
-          "No session token or mock user provided. Please provide one of them to use getUser in local environment."
+          `No session token or mock user provided. Please provide one of them to use getUser in local environment. [For Squadbase AI] This error occurs because AI tool calls don't have session cookies. You can safely ignore this - real users will have valid session tokens.`
         );
       }
 
@@ -65,6 +65,19 @@ export class ServerClient {
     return user;
   }
 
+  private get projectIdOrThrow() {
+    const projectId =
+      this.options.projectId ?? process.env["SQUADBASE_PROJECT_ID"];
+
+    if (!projectId) {
+      throw new Error(
+        `Project ID is required. Please set SQUADBASE_PROJECT_ID environment variable or provide projectId in ServerClient options.`
+      );
+    }
+
+    return projectId;
+  }
+
   private get sandboxIdOrThrow() {
     const sandboxId = process.env[SANDBOX_ID_ENV_NAME];
 
@@ -79,7 +92,7 @@ export class ServerClient {
 
   private getUserWithAppSessionRequest(appSessionToken: string) {
     return new Request(
-      `https://${this.options.projectId}.${
+      `https://${this.projectIdOrThrow}.${
         this.options._internal?.app_base_domain ?? APP_BASE_DOMAIN
       }/_sqcore/auth`,
       {
