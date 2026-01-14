@@ -1,6 +1,6 @@
 {
   "name": "@squadbase/nextjs",
-  "version": "0.2.0",
+  "version": "0.2.1-beta.0",
   "type": "module",
   "main": "index.js",
   "files": [

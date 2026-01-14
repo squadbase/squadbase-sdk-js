@@ -1,7 +1,7 @@
 {
   "name": "squadbase-sdk-js",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1-beta.0",
   "description": "Javascript SDK for Squadbase",
   "scripts": {
     "dev": "concurrently pnpm:dev:*",
