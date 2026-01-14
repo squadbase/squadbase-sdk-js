@@ -27,6 +27,7 @@
   "author": "Squadbase",
   "license": "MIT",
   "packageManager": "pnpm@10.6.3",
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "zod": "^3.24.2"
+  }
 }

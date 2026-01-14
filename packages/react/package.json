@@ -29,7 +29,8 @@
   "packageManager": "pnpm@10.6.3",
   "dependencies": {
     "@squadbase/browser": "workspace:^",
-    "@tanstack/react-query": "^5.74.3"
+    "@tanstack/react-query": "^5.74.3",
+    "ts-pattern": "^5.7.0"
   },
   "devDependencies": {
     "@types/react": "^19.1.2",
