@@ -4,3 +4,5 @@ export const APP_BASE_DOMAIN = "squadbase.app";
 export const PREVIEW_BASE_DOMAIN = "preview.app.squadbase.dev";
 export const PROJECT_ID_ENV_NAME = "SQUADBASE_PROJECT_ID";
 export const SANDBOX_ID_ENV_NAME = "INTERNAL_SQUADBASE_SANDBOX_ID";
+export const MACHINE_CREDENTIAL_ENV_NAME =
+  "INTERNAL_SQUADBASE_OAUTH_MACHINE_CREDENTIAL";
