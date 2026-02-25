@@ -6,6 +6,7 @@ import {
   PREVIEW_SESSION_COOKIE_NAME,
   SANDBOX_ID_ENV_NAME,
 } from "./constants";
+import { ConnectionClient } from "./connection-client";
 import { User, zUser } from "./types";
 
 export type GetCookie = () => Promise<string | undefined> | string | undefined;
@@ -116,6 +117,15 @@ export class ServerClient {
         },
       }
     );
+  }
+
+  connection(connectionId: string): ConnectionClient {
+    return new ConnectionClient({
+      connectionId,
+      projectId: this.options.projectId,
+      cookieOptions: this.options.cookieOptions,
+      _internal: this.options._internal,
+    });
   }
 }
 

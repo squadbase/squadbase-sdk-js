@@ -28,13 +28,6 @@ export type ConnectionFetchOptions = {
   timeoutMs?: number;
 };
 
-export type ConnectionFetchResponse = {
-  status: number;
-  headers: Record<string, string>;
-  body: unknown;
-  isBase64Encoded: boolean;
-};
-
 export class ConnectionClient {
   private readonly options: ConnectionClientOptions;
 
@@ -44,12 +37,12 @@ export class ConnectionClient {
 
   async fetch(
     url: string,
-    fetchOptions?: ConnectionFetchOptions
-  ): Promise<ConnectionFetchResponse> {
+    fetchOptions?: ConnectionFetchOptions,
+  ): Promise<Response> {
     const proxyUrl = this.resolveProxyUrl();
     const authHeaders = await this.resolveAuthHeaders();
 
-    const response = await fetch(proxyUrl, {
+    return await fetch(proxyUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -63,14 +56,6 @@ export class ConnectionClient {
         timeoutMs: fetchOptions?.timeoutMs,
       }),
     });
-
-    if (!response.ok) {
-      throw new Error(
-        `Connection proxy request failed with status ${response.status}`
-      );
-    }
-
-    return (await response.json()) as ConnectionFetchResponse;
   }
 
   private get projectIdOrThrow(): string {
@@ -79,7 +64,7 @@ export class ConnectionClient {
 
     if (!projectId) {
       throw new Error(
-        "Project ID is required. Please set SQUADBASE_PROJECT_ID environment variable or provide projectId in ConnectionClient options."
+        "Project ID is required. Please set SQUADBASE_PROJECT_ID environment variable or provide projectId in ConnectionClient options.",
       );
     }
 
@@ -110,8 +95,7 @@ export class ConnectionClient {
       return { Authorization: `Bearer ${machineCredential}` };
     }
 
-    const cookieString =
-      (await this.options.cookieOptions.getCookie()) ?? "";
+    const cookieString = (await this.options.cookieOptions.getCookie()) ?? "";
     const cookie = parseCookie(cookieString);
 
     const previewSessionToken = cookie[PREVIEW_SESSION_COOKIE_NAME];
@@ -129,10 +113,7 @@ export class ConnectionClient {
     throw new Error(
       "No authentication method available for connection proxy. " +
         "Expected one of: INTERNAL_SQUADBASE_OAUTH_MACHINE_CREDENTIAL env var, " +
-        "preview session cookie, or app session cookie."
+        "preview session cookie, or app session cookie.",
     );
   }
 }
-
-export const createConnectionClient = (options: ConnectionClientOptions) =>
-  new ConnectionClient(options);
