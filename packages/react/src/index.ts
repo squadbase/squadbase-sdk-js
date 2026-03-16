@@ -1,2 +1,3 @@
-export { SquadbaseProvider, useSquadbaseClient, useUser } from "./hooks";
-export * from "@squadbase/browser";
+export { SquadbaseProvider } from "./provider";
+export { useUser } from "./user";
+export type { User, UserState } from "./user";

@@ -26,11 +26,12 @@
   "keywords": [],
   "author": "Squadbase",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "packageManager": "pnpm@10.6.3",
   "dependencies": {
-    "@squadbase/browser": "workspace:^",
-    "@tanstack/react-query": "^5.74.3",
-    "ts-pattern": "^5.7.0"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/react": "^19.1.2",
