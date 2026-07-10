@@ -1,9 +1,9 @@
 export { SquadbaseProvider } from "./provider";
 export { useUser } from "./user";
 export type { User, UserState } from "./user";
-export { useStorage, StorageUploadsClient } from "./storage";
+export { useStorage, StorageClient } from "./storage";
 export type {
-  StorageClient,
+  Storage,
   StorageObject,
   StorageListResult,
   StorageListOptions,

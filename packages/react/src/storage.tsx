@@ -1,12 +1,16 @@
 import { z } from "zod";
 
 /**
- * Browser client for the Project Storage uploads namespace.
+ * Browser client for Project Storage.
  *
  * Requests target the same-origin path `/_sqcore/storage/*` with
  * `credentials: "include"`, reusing the session cookie that already
  * authenticates the hosted app. It must run inside a Squadbase-hosted app
  * where that cookie is present.
+ *
+ * Files are grouped into namespaces (e.g. `uploads`), each backed by a reserved
+ * key prefix in the bucket. That prefix is an implementation detail: every
+ * namespace exposes the same read/write API over plain, prefix-free keys.
  *
  * Provides reads (list / head / get / getUrl) and writes
  * (put / delete / copy / move).
@@ -59,7 +63,7 @@ const zApiPresignedPut = z.object({
 
 /** A single file in a listing. */
 export type StorageObject = {
-  /** Relative key within the uploads namespace. */
+  /** Key within the namespace, without the internal prefix. */
   key: string;
   /** Size in bytes. */
   size: number;
@@ -78,6 +82,7 @@ export type StorageListResult = {
 
 /** Metadata for a single file. */
 export type StorageMetadata = {
+  /** Key within the namespace, without the internal prefix. */
   key: string;
   size: number;
   /** MIME type. */
@@ -138,7 +143,38 @@ const throwIfNotOk = async (res: Response, label: string): Promise<void> => {
   );
 };
 
-export class StorageUploadsClient {
+/**
+ * Read/write client for a storage namespace whose reserved key prefix (e.g.
+ * `"uploads/"`) is applied transparently, so callers work with plain keys and
+ * never see it. Obtain a configured instance via {@link useStorage} rather than
+ * constructing one directly.
+ *
+ * This is the full read/write surface. A namespace that only supports a subset
+ * of operations should be given its own client type instead of reusing this
+ * one, and wired into {@link Storage} explicitly.
+ */
+export class StorageClient {
+  /**
+   * @param prefix The reserved key prefix (e.g. `"uploads/"`) that scopes every
+   *   request against this namespace.
+   */
+  constructor(private readonly prefix: string) {}
+
+  /** Prepends the namespace prefix to a caller-supplied key. */
+  private toInternalKey(key: string): string {
+    return `${this.prefix}${key}`;
+  }
+
+  /** Prepends the namespace prefix to a caller-supplied prefix (may be empty). */
+  private toInternalPrefix(prefix?: string): string {
+    return `${this.prefix}${prefix ?? ""}`;
+  }
+
+  /** Strips the namespace prefix from a key returned by the backend. */
+  private toPublicKey(key: string): string {
+    return key.startsWith(this.prefix) ? key.slice(this.prefix.length) : key;
+  }
+
   /**
    * Lists files under a prefix. Pass `delimiter: "/"` for a folder-style
    * listing, or omit it for a flat recursive listing.
@@ -149,7 +185,7 @@ export class StorageUploadsClient {
   ): Promise<StorageListResult> {
     const res = await fetch(
       storageUrl("/list", {
-        prefix,
+        prefix: this.toInternalPrefix(prefix),
         limit: options?.limit != null ? String(options.limit) : undefined,
         cursor: options?.cursor,
         delimiter: options?.delimiter,
@@ -160,11 +196,11 @@ export class StorageUploadsClient {
     const data = zApiListResult.parse(await res.json());
     return {
       objects: data.objects.map((o) => ({
-        key: o.key,
+        key: this.toPublicKey(o.key),
         size: o.size,
         lastModified: o.lastModified,
       })),
-      commonPrefixes: data.commonPrefixes,
+      commonPrefixes: data.commonPrefixes.map((p) => this.toPublicKey(p)),
       nextCursor: data.nextCursor,
     };
   }
@@ -173,13 +209,14 @@ export class StorageUploadsClient {
    * Fetches a file's metadata without reading its body.
    */
   async head(key: string): Promise<StorageMetadata> {
-    const res = await fetch(storageUrl("/head", { key }), {
-      credentials: "include",
-    });
+    const res = await fetch(
+      storageUrl("/head", { key: this.toInternalKey(key) }),
+      { credentials: "include" },
+    );
     await throwIfNotOk(res, "head");
     const data = zApiMetadata.parse(await res.json());
     return {
-      key: data.key,
+      key: this.toPublicKey(data.key),
       size: data.size,
       contentType: data.contentType,
       createdAt: data.createdAt,
@@ -191,9 +228,10 @@ export class StorageUploadsClient {
    * `expiresAt` to keep the URL valid.
    */
   async getUrl(key: string): Promise<PresignedUrl> {
-    const res = await fetch(storageUrl("/sign", { key }), {
-      credentials: "include",
-    });
+    const res = await fetch(
+      storageUrl("/sign", { key: this.toInternalKey(key) }),
+      { credentials: "include" },
+    );
     await throwIfNotOk(res, "getUrl");
     const data = zApiPresignedGet.parse(await res.json());
     return { url: data.url, expiresAt: data.expiresAt };
@@ -232,7 +270,11 @@ export class StorageUploadsClient {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ key, contentType, contentLength }),
+      body: JSON.stringify({
+        key: this.toInternalKey(key),
+        contentType,
+        contentLength,
+      }),
     });
     await throwIfNotOk(signRes, "put (sign)");
     const signed = zApiPresignedPut.parse(await signRes.json());
@@ -249,10 +291,10 @@ export class StorageUploadsClient {
    * Deletes a file.
    */
   async delete(key: string): Promise<void> {
-    const res = await fetch(storageUrl("/objects", { key }), {
-      method: "DELETE",
-      credentials: "include",
-    });
+    const res = await fetch(
+      storageUrl("/objects", { key: this.toInternalKey(key) }),
+      { method: "DELETE", credentials: "include" },
+    );
     await throwIfNotOk(res, "delete");
   }
 
@@ -268,7 +310,11 @@ export class StorageUploadsClient {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ srcKey, destKey, overwrite: options?.overwrite }),
+      body: JSON.stringify({
+        srcKey: this.toInternalKey(srcKey),
+        destKey: this.toInternalKey(destKey),
+        overwrite: options?.overwrite,
+      }),
     });
     await throwIfNotOk(res, "copy");
   }
@@ -285,21 +331,34 @@ export class StorageUploadsClient {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ srcKey, destKey, overwrite: options?.overwrite }),
+      body: JSON.stringify({
+        srcKey: this.toInternalKey(srcKey),
+        destKey: this.toInternalKey(destKey),
+        overwrite: options?.overwrite,
+      }),
     });
     await throwIfNotOk(res, "move");
   }
 }
 
-export type StorageClient = {
-  uploads: StorageUploadsClient;
+/**
+ * The Project Storage client, exposing one client per namespace.
+ *
+ * Each namespace is declared explicitly (rather than generated from a map) so
+ * that namespaces can expose different clients — a read-only namespace, for
+ * example, would use a client type without the write methods. Add a new
+ * namespace by giving it its own field and client here.
+ */
+export type Storage = {
+  /** Files uploaded through the app, under the `uploads/` namespace. */
+  uploads: StorageClient;
 };
 
-const storageClient: StorageClient = {
-  uploads: new StorageUploadsClient(),
+const storage: Storage = {
+  uploads: new StorageClient("uploads/"),
 };
 
 /** Returns the Project Storage client. */
-export function useStorage(): StorageClient {
-  return storageClient;
+export function useStorage(): Storage {
+  return storage;
 }
